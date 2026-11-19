@@ -2,6 +2,7 @@
 <html lang="ko"><head><meta charset="utf-8"><title>rec test</title>
 <style>html,body{margin:0;background:#111;color:#fff;font-family:sans-serif}canvas{display:block;width:100vw;height:56.25vw}</style>
 </head><body>
+<button id="rec" style="position:fixed;top:8px;left:8px;z-index:9;padding:12px 20px;font-size:18px">REC 5s</button>
 <canvas id="c" width="1920" height="1080"></canvas>
 <script>
 const c=document.getElementById('c'),x=c.getContext('2d');
@@ -40,4 +41,5 @@ window.__rec = async function(sec){
   document.body.appendChild(a);a.click();
   return {mime:mt, size:blob.size, vtracks:vstream.getVideoTracks().length, atracks:dest.stream.getAudioTracks().length};
 };
+document.getElementById("rec").onclick=async()=>{const r=await window.__rec(5); document.title="DONE "+JSON.stringify(r);};
 </script></body></html>
