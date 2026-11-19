@@ -1307,7 +1307,7 @@ const Auto = {
       queued++;
     }
     if (!best) return;
-    if (this.resolved > 0 && queued < 2 && !urgent && best.age < 1.0) return;
+    if (this.resolved > 0 && queued < 3 && !urgent && best.age < 2.2) return;
     const d = best.data;
     const mistake = this.mistakeAt < this.mistakes.length && this.resolved === this.mistakes[this.mistakeAt];
     let bin = d.ans;
