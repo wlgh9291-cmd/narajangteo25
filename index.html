@@ -322,7 +322,7 @@ const G = {
 
 const LAYOUT = {
   headerH: 108,
-  beltTop: 150, beltBottom: 690, beltY: 396,
+  beltTop: 150, beltBottom: 690, beltY: 340,
   cardW: 330, cardH: 196,
   binY: 762, binH: 292, binW: 340, binGap: 20
 };
@@ -460,7 +460,7 @@ function drawBelt(c, t) {
   rr(c, 32, 120, W - 64, 582, 28); c.stroke();
   c.restore();
 
-  const y = LAYOUT.beltY + LAYOUT.cardH / 2 + 20;
+  const y = LAYOUT.beltY + LAYOUT.cardH + 20;
   c.save();
   // 벨트 그림자 영역
   const g = c.createLinearGradient(0, y - 26, 0, y + 30);
@@ -858,7 +858,7 @@ function drawTutorial(c) {
   const a = G.tutorialT > 3.6 ? (4.2 - G.tutorialT) / 0.6 : clamp(G.tutorialT / 0.7, 0, 1);
   c.save();
   c.globalAlpha = clamp(a, 0, 1);
-  const w = 1060, h = 146, x = W / 2 - w / 2, y = 596;
+  const w = 1060, h = 136, x = W / 2 - w / 2, y = 566;
   shadow(c, 26, 12, 'rgba(23,35,63,0.20)');
   c.fillStyle = 'rgba(23,35,63,0.92)';
   rr(c, x, y, w, h, 26); c.fill(); noShadow(c);
@@ -1280,14 +1280,17 @@ const Auto = {
       }
       return;
     }
-    // 다음 카드 선택
-    let best = null;
+    // 다음 카드 선택: 3장 이상 쌓이거나 급해지면 몰아서 처리
+    let best = null, queued = 0, urgent = null;
     for (const c of G.cards) {
       if (c.dragging || c.fly || c.missT > 0 || c.retT > 0) continue;
-      if (c.age < 0.85) continue;
-      if (!best || c.x > best.x) best = c; // 가장 오른쪽(급한) 카드
+      if (c.age < 0.4) continue;
+      if (c.x > W - 700) urgent = c;
+      if (!best || c.x > best.x) best = c;
+      queued++;
     }
     if (!best) return;
+    if (queued < 3 && !urgent && best.age < 2.6) return;
     const d = best.data;
     const mistake = this.mistakeAt < this.mistakes.length && this.resolved === this.mistakes[this.mistakeAt];
     let bin = d.ans;
