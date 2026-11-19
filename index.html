@@ -334,7 +334,7 @@ function resetGame(duration) {
   G.correct = 0; G.wrong = 0; G.missed = 0; G.placed = 0;
   G.cards = []; G.particles = []; G.floaters = []; G.toasts = []; G.rings = [];
   G.total = duration; G.timeLeft = duration;
-  G.spawnTimer = 0.35; G.interval = 1.7; G.progress = 0;
+  G.spawnTimer = 0.5; G.interval = 2.4; G.progress = 0;
   G.bag = []; G.bagIdx = 0;
   G.drag = null; G.hoverBin = -1;
   G.shakeT = 0; G.shakeMag = 0; G.flashT = 0;
@@ -1135,7 +1135,7 @@ function resolveCard(card, binIndex) {
   } else {
     G.combo = 0;
     G.wrong++;
-    G.risk = Math.min(100, G.risk + 14);
+    G.risk = Math.min(100, G.risk + 12);
     G.binShake[binIndex] = 0.5;
     card.wrongFlash = 1;
     card.retFromY = card.y; card.retT = 0.22;
@@ -1218,8 +1218,8 @@ function update(dt) {
     G.spawnTimer -= dt;
     if (G.spawnTimer <= 0) {
       spawnCard(0);
-      if (G.rng() < 0.38) spawnCard(400);   // 두 건 동시 접수
-      G.interval = lerp(1.7, 1.2, G.progress);
+      if (G.rng() < 0.25) spawnCard(400);   // 두 건 동시 접수
+      G.interval = lerp(2.4, 1.5, G.progress);
       G.spawnTimer = G.interval;
     }
 
@@ -1250,7 +1250,7 @@ function update(dt) {
       if (!card.dragging) {
         card.x += speed * dt;
         if (card.x > W + 40) {
-          G.missed++; G.combo = 0; G.risk = Math.min(100, G.risk + 9);
+          G.missed++; G.combo = 0; G.risk = Math.min(100, G.risk + 8);
           card.missT = 0.3;
           addToast('요청이 반려되었습니다 — 시간 안에 처리하지 못했어요', '#7A4A00', 'x');
           G.shakeT = 0.2; G.shakeMag = 6;
