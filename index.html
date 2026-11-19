@@ -424,7 +424,7 @@ function drawIcon(c, type, cx, cy, s, color) {
   c.restore();
 }
 
-let bgCanvas = null;
+let bgCanvas = null, bgPanel = null;
 function buildBackground() {
   bgCanvas = document.createElement('canvas');
   bgCanvas.width = W; bgCanvas.height = H;
@@ -448,19 +448,23 @@ function buildBackground() {
   rg2.addColorStop(0, 'rgba(124,77,255,0.10)'); rg2.addColorStop(1, 'rgba(124,77,255,0)');
   c.fillStyle = rg2; c.fillRect(1200, -100, 720, 800);
 
-  // 작업대 패널
-  c.save();
-  c.shadowBlur = 22; c.shadowOffsetY = 10; c.shadowColor = 'rgba(23,35,63,0.06)';
-  c.fillStyle = 'rgba(255,255,255,0.62)';
-  rr(c, 32, 120, W - 64, 582, 28); c.fill();
-  c.shadowBlur = 0; c.shadowOffsetY = 0; c.shadowColor = 'transparent';
-  c.strokeStyle = 'rgba(23,35,63,0.06)'; c.lineWidth = 2;
-  rr(c, 32, 120, W - 64, 582, 28); c.stroke();
-  c.restore();
+  // 작업대 패널이 있는 버전
+  bgPanel = document.createElement('canvas');
+  bgPanel.width = W; bgPanel.height = H;
+  const pc = bgPanel.getContext('2d');
+  pc.drawImage(bgCanvas, 0, 0);
+  pc.save();
+  pc.shadowBlur = 22; pc.shadowOffsetY = 10; pc.shadowColor = 'rgba(23,35,63,0.06)';
+  pc.fillStyle = 'rgba(255,255,255,0.62)';
+  rr(pc, 32, 120, W - 64, 582, 28); pc.fill();
+  pc.shadowBlur = 0; pc.shadowOffsetY = 0; pc.shadowColor = 'transparent';
+  pc.strokeStyle = 'rgba(23,35,63,0.06)'; pc.lineWidth = 2;
+  rr(pc, 32, 120, W - 64, 582, 28); pc.stroke();
+  pc.restore();
 }
-function drawBackground(c) {
+function drawBackground(c, withPanel) {
   if (!bgCanvas) buildBackground();
-  c.drawImage(bgCanvas, 0, 0);
+  c.drawImage(withPanel ? bgPanel : bgCanvas, 0, 0);
 }
 
 function drawBelt(c, t) {
@@ -778,7 +782,7 @@ function drawNarmi(c) {
 /* ---------------- 타이틀 ---------------- */
 function drawTitle(c) {
   const t = G.t;
-  drawBackground(c, t);
+  drawBackground(c, false);
 
   // 타이틀 텍스트
   c.save();
@@ -970,7 +974,7 @@ function render() {
   if (G.scene === 'title') {
     drawTitle(c);
   } else if (G.scene === 'play' || G.scene === 'result') {
-    drawBackground(c, G.t);
+    drawBackground(c, true);
     drawBelt(c, G.t);
     drawBins(c);
     c.save();
