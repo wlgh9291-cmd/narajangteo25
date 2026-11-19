@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>poc2</title>
+<style>html,body{margin:0;background:#111}canvas{display:block;width:960px;height:540px}</style>
+</head><body>
+<div id="log" style="color:#fff;font:14px monospace;white-space:pre"></div>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script>
+const c=document.getElementById('c'),x=c.getContext('2d'),L=document.getElementById('log');
+let t=0, frames=0;
+function draw(){x.fillStyle='#101a35';x.fillRect(0,0,1920,1080);
+ x.fillStyle='#ffd166';x.font='bold 120px sans-serif';x.textAlign='center';
+ x.fillText('FRAME '+(frames++),960,540);
+ x.fillStyle='#4ecdc4';x.fillRect(100+(t*6)%1600,800,200,80);t+=16;}
+function loop(){draw();requestAnimationFrame(loop);} loop();
+
+function countRaf(ms){return new Promise(r=>{let n=0;const t0=performance.now();
+ (function f(){n++;if(performance.now()-t0<ms)requestAnimationFrame(f);else r({ms,n,fps:+(n/(ms/1000)).toFixed(1)});})();});}
+function countInt(ms,step){return new Promise(r=>{let n=0;const t0=performance.now();
+ const id=setInterval(()=>{n++;if(performance.now()-t0>=ms){clearInterval(id);r({ms,n,step,fps:+(n/(ms/1000)).toFixed(1)});}},step);});}
+
+async function rec(mode,sec,fps){
+  const vs=c.captureStream(mode==='manual'?0:60);
+  const vt=vs.getVideoTracks()[0];
+  const ac=new AudioContext(),dest=ac.createMediaStreamDestination();
+  const o=ac.createOscillator(),g=ac.createGain();g.gain.value=0.15;o.frequency.value=330;
+  o.connect(g);g.connect(dest);o.start();
+  const st=new MediaStream([vt,...dest.stream.getAudioTracks()]);
+  const rec=new MediaRecorder(st,{mimeType:'video/mp4',videoBitsPerSecond:12000000,audioBitsPerSecond:128000});
+  const chunks=[];rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+  const done=new Promise(r=>rec.onstop=r);
+  let id=null;
+  if(mode==='manual'){id=setInterval(()=>{try{vt.requestFrame();}catch(e){}},1000/fps);}
+  rec.start();await new Promise(r=>setTimeout(r,sec*1000));rec.stop();if(id)clearInterval(id);
+  await done;o.stop();ac.close();
+  const blob=new Blob(chunks,{type:'video/mp4'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rec-'+mode+'.mp4';a.click();
+  return {mode,size:blob.size};
+}
+window.__poc2=async()=>{
+  const raf=await countRaf(2000);const int16=await countInt(2000,16);const int33=await countInt(2000,33);
+  const a=await rec('auto',3,30);
+  const b=await rec('manual',3,30);
+  const out={raf,int16,int33,a,b};L.textContent=JSON.stringify(out);document.title='POC2 '+JSON.stringify(out);return out;
+};
+</script>
+<button id="go" style="position:fixed;top:0;right:0;z-index:9;padding:10px">GO</button>
+<script>document.getElementById('go').onclick=()=>window.__poc2();</script>
+</body></html>
