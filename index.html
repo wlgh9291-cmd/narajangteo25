@@ -1246,7 +1246,12 @@ function update(dt) {
     G.scoreShown += (G.score - G.scoreShown) * Math.min(1, dt * 5);
     if (G.score - G.scoreShown < 1) G.scoreShown = G.score;
     if (G.sceneT > 0.4 && G.sceneT - dt <= 0.4) Sound.stamp();
-    for (const card of G.cards) { if (card.fly) { card.fly.t += dt / 0.3; } }
+    for (let i = G.cards.length - 1; i >= 0; i--) {
+      const card = G.cards[i];
+      card.alpha = Math.max(0, card.alpha - dt * 4);
+      if (card.fly) { card.fly.t += dt / 0.3; card.x = lerp(card.fly.fromX, card.fly.toX, clamp(card.fly.t, 0, 1)); }
+      if (card.alpha <= 0.01) G.cards.splice(i, 1);
+    }
   }
 }
 
