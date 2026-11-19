@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>rec test</title>
+<style>html,body{margin:0;background:#111;color:#fff;font-family:sans-serif}canvas{display:block;width:100vw;height:56.25vw}</style>
+</head><body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script>
+const c=document.getElementById('c'),x=c.getContext('2d');
+let t=0;
+function draw(){
+  x.fillStyle='#101a35';x.fillRect(0,0,1920,1080);
+  x.fillStyle='#ffd166';x.font='bold 120px "Noto Sans KR",sans-serif';x.textAlign='center';
+  x.fillText('나라장터 25시',960,520);
+  x.fillStyle='#4ecdc4';x.font='bold 64px sans-serif';
+  x.fillText('REC TEST '+ (t/1000).toFixed(1)+'s',960,700);
+  x.fillStyle='#fff';x.font='40px sans-serif';x.fillText('한글 렌더 확인 · 조달청 나르미',960,820);
+  const g=x.createLinearGradient(0,900,1920,900);g.addColorStop(0,'#ff6b6b');g.addColorStop(1,'#4ecdc4');
+  x.fillStyle=g;x.fillRect(160+Math.sin(t/300)*80,900,400,60);
+  t+=16;requestAnimationFrame(draw);
+}
+draw();
+window.__rec = async function(sec){
+  const ac = new (window.AudioContext||window.webkitAudioContext)();
+  const dest = ac.createMediaStreamDestination();
+  const o = ac.createOscillator(); const g2=ac.createGain(); g2.gain.value=0.2;
+  o.frequency.value=440; o.connect(g2); g2.connect(dest); o.start();
+  const vstream = c.captureStream(60);
+  const tracks = [...vstream.getVideoTracks(), ...dest.stream.getAudioTracks()];
+  const st = new MediaStream(tracks);
+  const types=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
+  let mt=null; for(const ty of types){ if(MediaRecorder.isTypeSupported(ty)){mt=ty;break;} }
+  const rec = new MediaRecorder(st,{mimeType:mt||undefined,videoBitsPerSecond:12000000});
+  const chunks=[]; rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+  const done = new Promise(r=>rec.onstop=r);
+  rec.start(1000);
+  await new Promise(r=>setTimeout(r,sec*1000));
+  rec.stop(); await done;
+  const blob=new Blob(chunks,{type:mt||'video/webm'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='rec-test.'+(blob.type.includes('mp4')?'mp4':'webm');
+  document.body.appendChild(a);a.click();
+  return {mime:mt, size:blob.size, vtracks:vstream.getVideoTracks().length, atracks:dest.stream.getAudioTracks().length};
+};
+</script></body></html>
