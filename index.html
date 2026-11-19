@@ -358,10 +358,10 @@ function nextCardData() {
   return G.bag[G.bagIdx++];
 }
 
-function spawnCard() {
+function spawnCard(offset) {
   const data = nextCardData();
   G.cards.push({
-    x: -LAYOUT.cardW - 40, y: LAYOUT.beltY, w: LAYOUT.cardW, h: LAYOUT.cardH,
+    x: -LAYOUT.cardW - 40 - (offset || 0), y: LAYOUT.beltY, w: LAYOUT.cardW, h: LAYOUT.cardH,
     data, age: 0, dragging: false, dead: false, rejected: 0, scale: 0.6, alpha: 1,
     fly: null, rot: 0, bob: G.rng() * TAU, glow: 0, missT: 0, wrongFlash: 0
   });
@@ -1211,7 +1211,8 @@ function update(dt) {
     // 스폰
     G.spawnTimer -= dt;
     if (G.spawnTimer <= 0) {
-      spawnCard();
+      spawnCard(0);
+      if (G.rng() < 0.38) spawnCard(400);   // 두 건 동시 접수
       G.interval = lerp(1.7, 1.2, G.progress);
       G.spawnTimer = G.interval;
     }
