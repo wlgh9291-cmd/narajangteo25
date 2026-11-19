@@ -1218,8 +1218,9 @@ function update(dt) {
     G.spawnTimer -= dt;
     if (G.spawnTimer <= 0) {
       spawnCard(0);
-      if (G.rng() < 0.25) spawnCard(400);   // 두 건 동시 접수
-      G.interval = lerp(2.4, 1.5, G.progress);
+      // 시연(자동 플레이) 모드는 조금 더 몰아치는 하이라이트로 진행
+      if (G.rng() < (G.demo ? 0.38 : 0.25)) spawnCard(400);   // 두 건 동시 접수
+      G.interval = G.demo ? lerp(1.7, 1.2, G.progress) : lerp(2.4, 1.5, G.progress);
       G.spawnTimer = G.interval;
     }
 
