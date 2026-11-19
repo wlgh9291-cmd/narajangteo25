@@ -334,7 +334,7 @@ function resetGame(duration) {
   G.correct = 0; G.wrong = 0; G.missed = 0; G.placed = 0;
   G.cards = []; G.particles = []; G.floaters = []; G.toasts = []; G.rings = [];
   G.total = duration; G.timeLeft = duration;
-  G.spawnTimer = 0.5; G.interval = 2.1; G.progress = 0;
+  G.spawnTimer = 0.5; G.interval = 1.8; G.progress = 0;
   G.bag = []; G.bagIdx = 0;
   G.drag = null; G.hoverBin = -1;
   G.shakeT = 0; G.shakeMag = 0; G.flashT = 0;
@@ -1200,12 +1200,12 @@ function update(dt) {
     G.spawnTimer -= dt;
     if (G.spawnTimer <= 0) {
       spawnCard();
-      G.interval = lerp(2.1, 1.45, G.progress);
+      G.interval = lerp(1.8, 1.35, G.progress);
       G.spawnTimer = G.interval;
     }
 
     // 카드 진행
-    const speed = lerp(228, 262, G.progress);
+    const speed = lerp(285, 320, G.progress);
     for (let i = G.cards.length - 1; i >= 0; i--) {
       const card = G.cards[i];
       card.age += dt;
@@ -1284,7 +1284,7 @@ const Auto = {
     let best = null;
     for (const c of G.cards) {
       if (c.dragging || c.fly || c.missT > 0 || c.retT > 0) continue;
-      if (c.age < 0.55) continue;
+      if (c.age < 0.85) continue;
       if (!best || c.x > best.x) best = c; // 가장 오른쪽(급한) 카드
     }
     if (!best) return;
@@ -1296,7 +1296,7 @@ const Auto = {
     const by = LAYOUT.binY + 90 + (Math.random() * 24 - 12);
     beginDrag(best, best.x + best.w / 2, best.y + best.h / 2);
     this.d = {
-      card: best, t: 0, dur: 0.66 + Math.random() * 0.22, hold: 0.1,
+      card: best, t: 0, dur: 0.58 + Math.random() * 0.18, hold: 0.08,
       p0: { x: best.x + best.w / 2, y: best.y + best.h / 2 },
       cp: { x: lerp(best.x + best.w / 2, bx, 0.5), y: Math.min(best.y, by) - 130 },
       p1: { x: bx, y: by }
