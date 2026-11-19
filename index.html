@@ -862,12 +862,12 @@ function drawTutorial(c) {
   const a = G.tutorialT > 3.4 ? clamp((4.2 - G.tutorialT) / 0.5, 0, 1) : clamp(G.tutorialT / 0.6, 0, 1);
   c.save();
   c.globalAlpha = clamp(a, 0, 1);
-  const w = 880, h = 66, x = 520, y = 150;
+  const w = 740, h = 66, x = 470, y = 150;
   shadow(c, 18, 8, 'rgba(23,35,63,0.20)');
   c.fillStyle = 'rgba(23,35,63,0.94)';
   rr(c, x, y, w, h, 33); c.fill(); noShadow(c);
   drawIcon(c, 'check', x + 40, y + 33, 22, '#7FE3B8');
-  text(c, '카드를 끌어서 알맞은 계약 트랙에 놓으세요', x + 68, y + 41, { size: 22, weight: 800, color: '#FFFFFF' });
+  text(c, '카드를 끌어서 알맞은 트랙에 놓으세요', x + 68, y + 41, { size: 21, weight: 800, color: '#FFFFFF' });
   c.restore();
 }
 
@@ -1308,7 +1308,7 @@ const Auto = {
       queued++;
     }
     if (!best) return;
-    if (this.resolved > 0 && queued < 3 && !urgent && best.age < 2.2) return;
+    if (this.resolved > 0 && queued < 3 && !urgent && best.age < 3.2) return;
     const d = best.data;
     const mistake = this.mistakeAt < this.mistakes.length && this.resolved === this.mistakes[this.mistakeAt];
     let bin = d.ans;
