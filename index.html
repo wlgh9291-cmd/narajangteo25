@@ -334,7 +334,7 @@ function resetGame(duration) {
   G.correct = 0; G.wrong = 0; G.missed = 0; G.placed = 0;
   G.cards = []; G.particles = []; G.floaters = []; G.toasts = []; G.rings = [];
   G.total = duration; G.timeLeft = duration;
-  G.spawnTimer = 0.5; G.interval = 1.8; G.progress = 0;
+  G.spawnTimer = 0.35; G.interval = 1.7; G.progress = 0;
   G.bag = []; G.bagIdx = 0;
   G.drag = null; G.hoverBin = -1;
   G.shakeT = 0; G.shakeMag = 0; G.flashT = 0;
@@ -859,16 +859,15 @@ function drawTitle(c) {
 /* ---------------- 튜토리얼 / 카운트다운 ---------------- */
 function drawTutorial(c) {
   if (G.tutorialT <= 0) return;
-  const a = G.tutorialT > 3.6 ? (4.2 - G.tutorialT) / 0.6 : clamp(G.tutorialT / 0.7, 0, 1);
+  const a = G.tutorialT > 3.4 ? clamp((4.2 - G.tutorialT) / 0.5, 0, 1) : clamp(G.tutorialT / 0.6, 0, 1);
   c.save();
   c.globalAlpha = clamp(a, 0, 1);
-  const w = 1060, h = 136, x = W / 2 - w / 2, y = 566;
-  shadow(c, 26, 12, 'rgba(23,35,63,0.20)');
-  c.fillStyle = 'rgba(23,35,63,0.92)';
-  rr(c, x, y, w, h, 26); c.fill(); noShadow(c);
-  drawIcon(c, 'check', x + 54, y + 52, 26, '#7FE3B8');
-  text(c, '카드를 끌어서 알맞은 계약 트랙에 놓으세요', x + 92, y + 62, { size: 27, weight: 800, color: '#FFFFFF' });
-  text(c, '잘못 보내면 감사 리스크 ↑   ·   녹색제품은 보너스   ·   담합·서류 위조는 제재 트랙', x + 92, y + 104, { size: 20, weight: 700, color: '#B9C6DC' });
+  const w = 880, h = 66, x = 520, y = 150;
+  shadow(c, 18, 8, 'rgba(23,35,63,0.20)');
+  c.fillStyle = 'rgba(23,35,63,0.94)';
+  rr(c, x, y, w, h, 33); c.fill(); noShadow(c);
+  drawIcon(c, 'check', x + 40, y + 33, 22, '#7FE3B8');
+  text(c, '카드를 끌어서 알맞은 계약 트랙에 놓으세요', x + 68, y + 41, { size: 22, weight: 800, color: '#FFFFFF' });
   c.restore();
 }
 
@@ -1213,12 +1212,12 @@ function update(dt) {
     G.spawnTimer -= dt;
     if (G.spawnTimer <= 0) {
       spawnCard();
-      G.interval = lerp(1.8, 1.35, G.progress);
+      G.interval = lerp(1.7, 1.2, G.progress);
       G.spawnTimer = G.interval;
     }
 
     // 카드 진행
-    const speed = lerp(285, 320, G.progress);
+    const speed = lerp(300, 335, G.progress);
     for (let i = G.cards.length - 1; i >= 0; i--) {
       const card = G.cards[i];
       card.age += dt;
@@ -1308,7 +1307,7 @@ const Auto = {
       queued++;
     }
     if (!best) return;
-    if (queued < 3 && !urgent && best.age < 2.6) return;
+    if (this.resolved > 0 && queued < 2 && !urgent && best.age < 2.2) return;
     const d = best.data;
     const mistake = this.mistakeAt < this.mistakes.length && this.resolved === this.mistakes[this.mistakeAt];
     let bin = d.ans;
@@ -1317,7 +1316,7 @@ const Auto = {
     const by = LAYOUT.binY + 90 + (Math.random() * 24 - 12);
     beginDrag(best, best.x + best.w / 2, best.y + best.h / 2);
     this.d = {
-      card: best, t: 0, dur: 0.58 + Math.random() * 0.18, hold: 0.08,
+      card: best, t: 0, dur: 0.5 + Math.random() * 0.16, hold: 0.08,
       p0: { x: best.x + best.w / 2, y: best.y + best.h / 2 },
       cp: { x: lerp(best.x + best.w / 2, bx, 0.5), y: Math.min(best.y, by) - 130 },
       p1: { x: bx, y: by }
