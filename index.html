@@ -451,6 +451,15 @@ function drawBackground(c, t) {
 }
 
 function drawBelt(c, t) {
+  // 작업대 패널
+  c.save();
+  shadow(c, 22, 10, 'rgba(23,35,63,0.06)');
+  c.fillStyle = 'rgba(255,255,255,0.62)';
+  rr(c, 32, 120, W - 64, 582, 28); c.fill(); noShadow(c);
+  c.strokeStyle = 'rgba(23,35,63,0.06)'; c.lineWidth = 2;
+  rr(c, 32, 120, W - 64, 582, 28); c.stroke();
+  c.restore();
+
   const y = LAYOUT.beltY + LAYOUT.cardH / 2 + 20;
   c.save();
   // 벨트 그림자 영역
@@ -474,8 +483,20 @@ function drawBelt(c, t) {
   }
   c.restore();
 
-  text(c, '요청 벨트', 64, LAYOUT.beltTop - 22, { size: 17, weight: 800, color: '#8895AD' });
-  text(c, '카드를 끌어서 맞는 트랙에 놓으세요', 64, LAYOUT.beltTop + 8, { size: 19, weight: 700, color: '#A6B2C8' });
+  c.save();
+  c.fillStyle = '#2F6FED';
+  c.beginPath(); c.arc(62, 152, 5, 0, TAU); c.fill();
+  text(c, '요청 접수 현황', 78, 159, { size: 19, weight: 800, color: '#3E5488' });
+  text(c, '카드를 끌어서 맞는 트랙에 놓으세요', 62, 192, { size: 17, weight: 700, color: '#9AA7BF' });
+  const liveA = 0.55 + Math.sin(t * 4) * 0.3;
+  c.globalAlpha = 0.9;
+  c.fillStyle = '#E8F7EF';
+  rr(c, W - 330, 136, 190, 34, 17); c.fill();
+  c.globalAlpha = liveA; c.fillStyle = '#0E9F8C';
+  c.beginPath(); c.arc(W - 306, 153, 6, 0, TAU); c.fill();
+  c.globalAlpha = 1;
+  text(c, '실시간 접수 중', W - 292, 160, { size: 15, weight: 800, color: '#0B7C6D' });
+  c.restore();
 }
 
 /* ---------------- 헤더 ---------------- */
@@ -499,9 +520,9 @@ function drawHeader(c) {
   text(c, '조달 마스터의 하루', 138, 86, { size: 17, weight: 700, color: '#7B89A6' });
 
   // 점수
-  text(c, 'SCORE', 700, 32, { size: 13, weight: 800, color: '#93A0B8' });
-  text(c, comma(G.score), 700, 80, { size: 42, weight: 800, color: '#17233F' });
-  text(c, '절감 ' + money(G.saved), 700, 103, { size: 15, weight: 700, color: '#0E9F8C' });
+  text(c, 'SCORE', 700, 28, { size: 13, weight: 800, color: '#93A0B8' });
+  text(c, comma(G.score), 700, 74, { size: 42, weight: 800, color: '#17233F' });
+  text(c, '절감 ' + money(G.saved), 700, 101, { size: 15, weight: 700, color: '#0E9F8C' });
 
   // 콤보
   if (G.combo >= 2) {
@@ -537,7 +558,8 @@ function drawHeader(c) {
   c.save();
   c.fillStyle = 'rgba(23,35,63,0.08)'; rr(c, tx, 96, tw, 10, 5); c.fill();
   const rc = G.risk >= 70 ? '#E03131' : (G.risk >= 40 ? '#F2762E' : '#0E9F8C');
-  c.fillStyle = rc; rr(c, tx, 96, Math.max(6, tw * clamp(G.risk / 100, 0, 1)), 10, 5); c.fill();
+  const rw = tw * clamp(G.risk / 100, 0, 1);
+  if (rw > 2) { c.fillStyle = rc; rr(c, tx, 96, rw, 10, 5); c.fill(); }
   c.restore();
 }
 
@@ -624,41 +646,39 @@ function drawCard(c, card) {
   c.fillRect(x, y, 10, h);
   c.restore();
 
-  // 기관 칩
-  c.font = font(17, 800);
-  const orgText = d.org;
-  const chipW = Math.min(w - 100, c.measureText(orgText).width + 26);
-  c.fillStyle = '#EEF3FB';
-  rr(c, x + 26, y + 20, chipW, 30, 15); c.fill();
-  text(c, orgText, x + 26 + chipW / 2, y + 41, { size: 17, weight: 800, color: '#5A6B87', align: 'center' });
+  // 태그 (상단 우측)
+  c.font = font(16, 800);
+  const tw2 = Math.min(w - 150, c.measureText(d.tag).width + (d.green ? 52 : 24));
+  const pillX = x + w - 20 - tw2;
+  c.fillStyle = d.green ? '#D8F3EC' : '#E8EEFA';
+  rr(c, pillX, y + 18, tw2, 32, 16); c.fill();
+  if (d.green) drawIcon(c, 'leaf', pillX + 20, y + 34, 16, '#0B7C6D');
+  text(c, d.tag, pillX + tw2 / 2 + (d.green ? 9 : 0), y + 40, { size: 16, weight: 800, color: d.green ? '#0B7C6D' : '#3E5488', align: 'center', maxWidth: tw2 - 20 });
 
-  // 녹색제품 배지
-  if (d.green) {
-    c.fillStyle = '#0E9F8C';
-    c.beginPath(); c.arc(x + w - 34, y + 35, 17, 0, TAU); c.fill();
-    drawIcon(c, 'leaf', x + w - 34, y + 35, 20, '#FFFFFF');
-  }
+  // 기관 칩
+  c.font = font(16, 800);
+  const orgText = d.org;
+  const chipW = Math.min(w - 44 - tw2 - 12, c.measureText(orgText).width + 24);
+  c.fillStyle = '#EEF3FB';
+  rr(c, x + 26, y + 20, chipW, 28, 14); c.fill();
+  text(c, orgText, x + 26 + chipW / 2, y + 40, { size: 16, weight: 800, color: '#5A6B87', align: 'center', maxWidth: chipW - 12 });
 
   // 품명
   const lines = wrapLines(c, d.item, w - 52, 26, 800).slice(0, 2);
   lines.forEach((ln, k) => {
-    text(c, ln, x + 26, y + 84 + k * 32, { size: 26, weight: 800, color: '#17233F' });
+    text(c, ln, x + 26, y + 92 + k * 33, { size: 26, weight: 800, color: '#17233F' });
   });
 
   // 금액 / 사유
   if (d.ans === 4) {
-    text(c, '부정행위 의심', x + 26, y + h - 22, { size: 21, weight: 800, color: '#E03131' });
+    text(c, '부정행위 의심', x + 26, y + h - 20, { size: 21, weight: 800, color: '#E03131' });
   } else {
-    text(c, '추정가 ' + money(d.amount), x + 26, y + h - 22, { size: 21, weight: 800, color: '#17233F' });
+    text(c, '추정가 ' + money(d.amount), x + 26, y + h - 20, { size: 21, weight: 800, color: '#17233F' });
   }
-
-  // 태그
-  c.font = font(16, 800);
-  const tw2 = c.measureText(d.tag).width + 24;
-  const pillX = x + w - 20 - tw2;
-  c.fillStyle = d.green ? '#DDF4F0' : '#E8EEFA';
-  rr(c, pillX, y + h - 42, tw2, 30, 15); c.fill();
-  text(c, d.tag, pillX + tw2 / 2, y + h - 21, { size: 16, weight: 800, color: d.green ? '#0B7C6D' : '#3E5488', align: 'center' });
+  c.save();
+  c.strokeStyle = 'rgba(23,35,63,0.08)'; c.lineWidth = 1.5;
+  c.beginPath(); c.moveTo(x + 24, y + h - 46); c.lineTo(x + w - 24, y + h - 46); c.stroke();
+  c.restore();
 
   if (card.wrongFlash > 0) {
     c.fillStyle = 'rgba(224,49,49,' + (0.22 * card.wrongFlash) + ')';
@@ -769,7 +789,7 @@ function drawTitle(c) {
   noShadow(c);
 
   c.font = font(42, 800); c.fillStyle = '#3E5488';
-  c.fillText('조달 마스터의 하루', W / 2, 410);
+  c.fillText('조달 마스터의 하루', W / 2, 416);
 
   c.font = font(24, 700); c.fillStyle = '#7B89A6';
   c.fillText('전국에서 밀려오는 구매 요청, 90초 안에 가장 알맞은 계약 방식으로 보내세요.', W / 2, 476);
