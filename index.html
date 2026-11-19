@@ -424,13 +424,16 @@ function drawIcon(c, type, cx, cy, s, color) {
   c.restore();
 }
 
-function drawBackground(c, t) {
+let bgCanvas = null;
+function buildBackground() {
+  bgCanvas = document.createElement('canvas');
+  bgCanvas.width = W; bgCanvas.height = H;
+  const c = bgCanvas.getContext('2d');
+
   const g = c.createLinearGradient(0, 0, 0, H);
   g.addColorStop(0, '#F6F9FF'); g.addColorStop(0.45, '#E9F0FB'); g.addColorStop(1, '#DCE7F7');
   c.fillStyle = g; c.fillRect(0, 0, W, H);
 
-  // 은은한 격자 점
-  c.save();
   c.fillStyle = 'rgba(47,111,237,0.10)';
   const step = 48;
   for (let y = 24; y < H; y += step) {
@@ -438,28 +441,29 @@ function drawBackground(c, t) {
       c.beginPath(); c.arc(x, y, 1.7, 0, TAU); c.fill();
     }
   }
-  c.restore();
-
-  // 좌상단 파란 빛무리
   const rg = c.createRadialGradient(240, -40, 20, 240, -40, 620);
   rg.addColorStop(0, 'rgba(47,111,237,0.16)'); rg.addColorStop(1, 'rgba(47,111,237,0)');
   c.fillStyle = rg; c.fillRect(0, 0, 1000, 700);
-
   const rg2 = c.createRadialGradient(1720, 240, 20, 1720, 240, 560);
   rg2.addColorStop(0, 'rgba(124,77,255,0.10)'); rg2.addColorStop(1, 'rgba(124,77,255,0)');
   c.fillStyle = rg2; c.fillRect(1200, -100, 720, 800);
-}
 
-function drawBelt(c, t) {
   // 작업대 패널
   c.save();
-  shadow(c, 22, 10, 'rgba(23,35,63,0.06)');
+  c.shadowBlur = 22; c.shadowOffsetY = 10; c.shadowColor = 'rgba(23,35,63,0.06)';
   c.fillStyle = 'rgba(255,255,255,0.62)';
-  rr(c, 32, 120, W - 64, 582, 28); c.fill(); noShadow(c);
+  rr(c, 32, 120, W - 64, 582, 28); c.fill();
+  c.shadowBlur = 0; c.shadowOffsetY = 0; c.shadowColor = 'transparent';
   c.strokeStyle = 'rgba(23,35,63,0.06)'; c.lineWidth = 2;
   rr(c, 32, 120, W - 64, 582, 28); c.stroke();
   c.restore();
+}
+function drawBackground(c) {
+  if (!bgCanvas) buildBackground();
+  c.drawImage(bgCanvas, 0, 0);
+}
 
+function drawBelt(c, t) {
   const y = LAYOUT.beltY + LAYOUT.cardH + 20;
   c.save();
   // 벨트 그림자 영역
@@ -942,7 +946,16 @@ function drawResult(c) {
   text(c, '아낀 세금 ' + money(G.saved) + '은 다시 국민의 몫으로 돌아갑니다.', x + 96, y + 620, { size: 24, weight: 800, color: '#22408F' });
   c.restore();
 
+  const pulseA = 0.55 + 0.45 * Math.abs(Math.sin(G.t * 2.2));
+  c.save(); c.globalAlpha = pulseA;
   text(c, '다시 도전 — R 키 또는 클릭', x + 64, y + 706, { size: 21, weight: 800, color: '#2F6FED' });
+  c.restore();
+  // 은은한 반짝임 (영상 프레임 유지)
+  c.save();
+  c.globalAlpha = 0.10 + 0.06 * Math.sin(G.t * 1.7);
+  c.fillStyle = '#2F6FED';
+  rr(c, x + 64, y + 566, w - 128, 92, 20); c.fill();
+  c.restore();
   text(c, '나라장터 25시 · 2026 조달청 AI 게임·콘텐츠 공모전', x + w - 64, y + 706, { size: 16, weight: 700, color: '#A6B2C8', align: 'right' });
 }
 
