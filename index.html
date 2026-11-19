@@ -334,7 +334,7 @@ function resetGame(duration) {
   G.correct = 0; G.wrong = 0; G.missed = 0; G.placed = 0;
   G.cards = []; G.particles = []; G.floaters = []; G.toasts = []; G.rings = [];
   G.total = duration; G.timeLeft = duration;
-  G.spawnTimer = 0.6; G.interval = 2.35; G.progress = 0;
+  G.spawnTimer = 0.5; G.interval = 2.1; G.progress = 0;
   G.bag = []; G.bagIdx = 0;
   G.drag = null; G.hoverBin = -1;
   G.shakeT = 0; G.shakeMag = 0; G.flashT = 0;
@@ -491,11 +491,11 @@ function drawBelt(c, t) {
   const liveA = 0.55 + Math.sin(t * 4) * 0.3;
   c.globalAlpha = 0.9;
   c.fillStyle = '#E8F7EF';
-  rr(c, W - 330, 136, 190, 34, 17); c.fill();
+  rr(c, 214, 136, 178, 32, 16); c.fill();
   c.globalAlpha = liveA; c.fillStyle = '#0E9F8C';
-  c.beginPath(); c.arc(W - 306, 153, 6, 0, TAU); c.fill();
+  c.beginPath(); c.arc(238, 152, 6, 0, TAU); c.fill();
   c.globalAlpha = 1;
-  text(c, '실시간 접수 중', W - 292, 160, { size: 15, weight: 800, color: '#0B7C6D' });
+  text(c, '실시간 접수 중', 252, 159, { size: 15, weight: 800, color: '#0B7C6D' });
   c.restore();
 }
 
@@ -961,7 +961,10 @@ function render() {
     drawBackground(c, G.t);
     drawBelt(c, G.t);
     drawBins(c);
+    c.save();
+    rr(c, 34, 122, W - 68, 578, 26); c.clip();
     for (const card of G.cards) if (!card.dragging) drawCard(c, card);
+    c.restore();
     drawEffects(c);
     if (G.drag) drawCard(c, G.drag.card);
     drawHeader(c);
@@ -1197,12 +1200,12 @@ function update(dt) {
     G.spawnTimer -= dt;
     if (G.spawnTimer <= 0) {
       spawnCard();
-      G.interval = lerp(2.35, 1.55, G.progress);
+      G.interval = lerp(2.1, 1.45, G.progress);
       G.spawnTimer = G.interval;
     }
 
     // 카드 진행
-    const speed = lerp(190, 235, G.progress);
+    const speed = lerp(228, 262, G.progress);
     for (let i = G.cards.length - 1; i >= 0; i--) {
       const card = G.cards[i];
       card.age += dt;
