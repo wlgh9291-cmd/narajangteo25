@@ -1156,7 +1156,9 @@ function endGame(reason) {
   G.endReason = reason || 'time';
   G.grade = gradeOf(G.score).g;
   G.scoreShown = 0;
+  if (G.drag) { G.drag.card.dragging = false; G.drag.card.rot = 0; }
   G.drag = null;
+  G.hoverBin = -1;
   Sound.stopMusic();
   Sound.end(reason !== 'risk');
 }
